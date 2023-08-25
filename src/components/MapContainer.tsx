@@ -1,7 +1,7 @@
-import Map, { Marker, LngLat, MarkerDragEvent } from "react-map-gl";
+import Map, { Marker, type MarkerDragEvent, type LngLat } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { vehicles } from "./vehicles";
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 
 // const parkLayer: CircleLayer = {
 //   id: "landuse_park",
@@ -17,7 +17,12 @@ const MAPBOX_TOKEN =
   "pk.eyJ1IjoiaGVucmlrLWJyYXRoZW4iLCJhIjoiY2xsbm5wcnQxMDI1bDNkbzQxaTFnNDA2OSJ9.IjsrKGbU65mmJI-Ba-Ztug";
 const OSLO_BOUNDS = { longitude: 10.747263, latitude: 59.926678 };
 
-export default function MapContainer() {
+type LoggedEvent =
+  | { onDrag: LngLat }
+  | { onDragEnd: LngLat }
+  | { onDragStart: LngLat };
+
+function MapContainer() {
   const [viewState, setViewState] = useState({
     ...OSLO_BOUNDS,
     zoom: 13,
@@ -25,7 +30,7 @@ export default function MapContainer() {
   const [marker, setMarker] = useState({
     ...OSLO_BOUNDS,
   });
-  const [events, logEvents] = useState<Record<string, LngLat>>({});
+  const [events, logEvents] = useState<LoggedEvent[]>([]);
 
   const onMarkerDragStart = useCallback((event: MarkerDragEvent) => {
     logEvents((_events) => ({ ..._events, onDragStart: event.lngLat }));
@@ -44,7 +49,7 @@ export default function MapContainer() {
     logEvents((_events) => ({ ..._events, onDragEnd: event.lngLat }));
   }, []);
 
-  // console.info(events);
+  console.info(events);
 
   return (
     <div className="h-screen">
@@ -96,3 +101,5 @@ export default function MapContainer() {
     </div>
   );
 }
+
+export default memo(MapContainer)
