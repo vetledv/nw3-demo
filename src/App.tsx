@@ -1,38 +1,21 @@
-import "./App.css";
-import { gql, useSubscription } from "@apollo/client";
+import { useSubscription } from "@apollo/client";
+import { subVehicles } from "~/graphql/queries";
 
-const subVehicles = gql`
-  subscription {
-    vehicles {
-      lastUpdated
-      vehicleId
-      line {
-        lineRef
-      }
-      location {
-        latitude
-        longitude
-      }
-    }
-  }
-`;
-
-const vehicleQuery = gql`
-  query Query {
-    vehicles {
-      vehicleId
-    }
-  }
-`;
-
-function App() {
-  const asd = useSubscription(subVehicles);
-
+export function App() {
+  const vehiclesSub = useSubscription(subVehicles);
+  //TODO: filter duplicates, keep newest entry
   return (
-    <>
-      <pre>{JSON.stringify(asd.data, null, 2)}</pre>
-    </>
+    <main>
+      <h2>Subscriptions</h2>
+      <ul className="space-y-1">
+        {vehiclesSub.data?.vehicles?.map((vehicle) => (
+          <li key={vehicle?.vehicleId} className="p-1 bg-zinc-200">
+            {/* <p>{vehicle?.vehicleId}</p>
+            <time>{new Date(vehicle?.lastUpdated).toLocaleTimeString()}</time> */}
+            <pre>{JSON.stringify(vehicle, null, 2)}</pre>
+          </li>
+        ))}
+      </ul>
+    </main>
   );
 }
-
-export default App;

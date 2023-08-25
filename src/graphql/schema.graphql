@@ -1,0 +1,176 @@
+"""
+Entur realtime vehicles graphql schema
+Aquired by going to: https://studio.apollographql.com/sandbox/schema/sdl
+And set endpoint to: https://api.entur.io/realtime/v1/vehicles/graphql
+"""
+input BoundingBox {
+  minLat: Float!
+  minLon: Float!
+  maxLat: Float!
+  maxLon: Float!
+}
+
+type Codespace {
+  codespaceId: String!
+}
+
+"""
+Java ZonedDateTime as scalar.
+"""
+scalar DateTime
+
+type Line {
+  lineRef: String
+  lineName: String
+  publicCode: String
+}
+
+type Location {
+  latitude: Float!
+  longitude: Float!
+}
+
+enum OccupancyEnumeration {
+  UNKNOWN
+  MANY_SEATS_AVAILABLE
+  SEATS_AVAILABLE
+  FEW_SEATS_AVAILABLE
+  STANDING_AVAILABLE
+  FULL
+  NOT_ACCEPTING_PASSENGERS
+}
+
+type Operator {
+  operatorRef: String!
+}
+
+type PointsOnLink {
+  length: Float
+  points: String
+}
+
+type Query {
+  vehicles(
+    serviceJourneyId: String
+    operatorRef: String
+    codespaceId: String
+    mode: VehicleModeEnumeration
+    vehicleId: String
+    lineRef: String
+    lineName: String
+    monitored: Boolean
+    boundingBox: BoundingBox
+  ): [VehicleUpdate]
+  lines(codespaceId: String): [Line]
+  codespaces: [Codespace]
+  serviceJourney(id: String!): ServiceJourney
+  serviceJourneys(lineRef: String!): [ServiceJourney]
+  operators(codespaceId: String!): [Operator]
+}
+
+type ServiceJourney {
+  id: String!
+  serviceJourneyId: String! @deprecated(reason: "Use 'id' instead.")
+  pointsOnLink: PointsOnLink
+    @deprecated(reason: "Experimental - should not be used with subscription")
+}
+
+type Subscription {
+  vehicleUpdates(
+    serviceJourneyId: String
+    operatorRef: String
+    codespaceId: String
+    mode: VehicleModeEnumeration
+    vehicleId: String
+    lineRef: String
+    lineName: String
+    monitored: Boolean
+    boundingBox: BoundingBox
+
+    """
+    Number of updates buffered before data is pushed. May be used in combination with bufferTime.
+    """
+    bufferSize: Int = 20
+
+    """
+    How long - in milliseconds - data is buffered before data is pushed. May be used in combination with bufferSize.
+    """
+    bufferTime: Int = 250
+  ): [VehicleUpdate] @deprecated(reason: "Use 'vehicles'.")
+  vehicles(
+    serviceJourneyId: String
+    operatorRef: String
+    codespaceId: String
+    mode: VehicleModeEnumeration
+    vehicleId: String
+    lineRef: String
+    lineName: String
+    monitored: Boolean
+    boundingBox: BoundingBox
+
+    """
+    Number of updates buffered before data is pushed. May be used in combination with bufferTime.
+    """
+    bufferSize: Int = 20
+
+    """
+    How long - in milliseconds - data is buffered before data is pushed. May be used in combination with bufferSize.
+    """
+    bufferTime: Int = 250
+  ): [VehicleUpdate]
+}
+
+enum VehicleModeEnumeration {
+  AIR
+  BUS
+  RAIL
+  TRAM
+  COACH
+  FERRY
+  METRO
+}
+
+enum VehicleStatusEnumeration {
+  ASSIGNED
+  AT_ORIGIN
+  CANCELLED
+  COMPLETED
+  IN_PROGRESS
+  OFF_ROUTE
+}
+
+type VehicleUpdate {
+  direction: String
+  serviceJourney: ServiceJourney
+  operator: Operator
+  codespace: Codespace
+  mode: VehicleModeEnumeration
+  vehicleId: String
+  vehicleRef: String @deprecated(reason: "Use 'vehicleId'.")
+  occupancy: OccupancyEnumeration
+  line: Line
+  lastUpdated: DateTime
+  lastUpdatedEpochSecond: Float
+  expiration: DateTime
+  expirationEpochSecond: Float
+  location: Location
+  speed: Float
+  heading: Float @deprecated(reason: "Use 'bearing''.")
+  bearing: Float
+  monitored: Boolean
+
+  """
+  The current delay in seconds - negative delay means ahead of schedule
+  """
+  delay: Float
+
+  """
+  Whether the vehicle is affected by traffic jams or other circumstances which may lead to further delays. If `null`, current status is unknown.
+  """
+  inCongestion: Boolean
+
+  """
+  Reported status of the vehicle
+  """
+  vehicleStatus: VehicleStatusEnumeration
+}
