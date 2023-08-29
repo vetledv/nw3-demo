@@ -1,6 +1,11 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,react
 
+graphql/gen
+gen/
+
+.swc/
+
 ### Node ###
 # Logs
 logs

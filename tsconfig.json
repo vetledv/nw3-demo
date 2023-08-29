@@ -25,6 +25,6 @@
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src", "codegen.ts", "tailwind.config.ts"],
+  "include": ["src", "graphql-codegen.ts", "tailwind.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
