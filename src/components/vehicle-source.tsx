@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSubscription } from "@apollo/client";
 import { Source, Layer } from "react-map-gl";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
@@ -8,7 +8,11 @@ import {
   type MaybeVehicle,
   subVehicles,
 } from "~/graphql/queries";
-import { useSelectedVehicleStore } from "~/utils/zustand";
+import {
+  useCurrVehiclesActions,
+  useCurrVehiclesStore,
+  useSelectedVehicleStore,
+} from "~/utils/zustand";
 
 type VehicleProperties = Pick<Vehicle, "lastUpdated" | "vehicleId">;
 
@@ -22,7 +26,7 @@ type VehicleFeature = Feature<Geometry, VehicleProperties>;
  *
  * @link https://stackoverflow.com/a/46700791
  */
-function notEmpty<T>(value: T | null | undefined): value is T {
+export function notEmpty<T>(value: T | null | undefined): value is T {
   if (value === null || value === undefined) {
     return false;
   }
@@ -63,50 +67,32 @@ const ONE_MIN = 60 * 1000;
  * @param millis amount of ms
  * @returns boolean
  */
-const olderThanMillis = (date: Date, millis: number) => {
+export const olderThanMillis = (date: Date, millis: number) => {
   const msDiff = new Date().getTime() - date.getTime();
   return msDiff > millis;
 };
 
 export function VehicleSource() {
-  const [vehicles, setVehicles] = useState<Array<MaybeVehicle>>([]);
-  const selectedId = useSelectedVehicleStore();
+  const currVehicles = useCurrVehiclesStore();
+  const cvActions = useCurrVehiclesActions();
+  const selectedVehicle = useSelectedVehicleStore();
 
   const vehiclesSub = useSubscription(subVehicles, {
     variables,
     onData(opts) {
-      const { data } = opts.data;
-      if (!data?.vehicles || data.vehicles.length === 0) {
+      const vehicles = opts.data.data?.vehicles
+      if (!vehicles || vehicles.length === 0) {
         //TODO: filter time here too?
         //if none are added for a long time, it will not filter old entries
         return;
       }
-      //TODO: spaghetti
-      const seenVehicles = new Set<string>();
-      const dupeFiltered = data.vehicles.filter(notEmpty).filter((vehicle) => {
-        if (!vehicle.vehicleId) {
-          return false;
-        }
-        const dupe = seenVehicles.has(vehicle.vehicleId);
-        seenVehicles.add(vehicle.vehicleId);
-        return !dupe;
-      });
-      setVehicles((prevArr) => {
-        const prevFiltered = prevArr.filter((prevItem) => {
-          const date = new Date(prevItem.lastUpdated);
-          const olderThanTwoMin = olderThanMillis(date, ONE_MIN);
-          if (olderThanTwoMin) {
-            return false;
-          }
-          return !seenVehicles.has(prevItem.vehicleId!);
-        });
-        return prevFiltered.concat(dupeFiltered);
-      });
+      cvActions.replace(vehicles);
+      console.log(currVehicles)
     },
   });
 
   const geojsonVehicles = useMemo(() => {
-    const features = vehicles.map((vehicle) => {
+    const features = currVehicles.map((vehicle) => {
       return {
         type: "Feature",
         id: vehicle!.vehicleId!,
@@ -129,10 +115,9 @@ export function VehicleSource() {
       type: "FeatureCollection",
       features: features || [],
     };
-  }, [vehiclesSub.data]) satisfies VehicleFeatCol;
+  }, [currVehicles]) satisfies VehicleFeatCol;
 
-  const selected = selectedId ?? "";
-  const filter = useMemo(() => ["in", "vehicleId", selected], [selected]);
+  const filter = ["in", "vehicleId", selectedVehicle?.vehicleId ?? ""];
 
   return (
     <Source id="vehicles" type="geojson" data={geojsonVehicles}>

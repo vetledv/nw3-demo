@@ -3,10 +3,15 @@ import Map, {
   type MarkerDragEvent,
   type LngLat,
   type MapRef,
+  type MapLayerMouseEvent,
 } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useCallback, useRef, useState } from "react";
-import { useSelectedVehicleStore, useVehicleSelect } from "~/utils/zustand";
+import {
+  useCurrVehiclesStore,
+  useSelectedVehicleStore,
+  useVehicleSelect,
+} from "~/utils/zustand";
 
 const MAPBOX_TOKEN =
   "pk.eyJ1IjoiaGVucmlrLWJyYXRoZW4iLCJhIjoiY2xsbm5wcnQxMDI1bDNkbzQxaTFnNDA2OSJ9.IjsrKGbU65mmJI-Ba-Ztug";
@@ -44,7 +49,25 @@ export default function MapContainer({ children }: React.PropsWithChildren) {
   }, []);
 
   const selectedId = useSelectedVehicleStore();
+  const currVehicles = useCurrVehiclesStore();
   const selectVehicle = useVehicleSelect();
+
+  const onClickMap = useCallback(
+    (evt: MapLayerMouseEvent) => {
+      const features = evt.features;
+      if (features === undefined || features.length === 0) {
+        return;
+      }
+      console.log(features);
+      const vehicle = features[0];
+      const isSelected = vehicle.properties?.vehicleId === selectedId;
+      const vehicleToSelect = currVehicles.find(
+        (x) => x.vehicleId === vehicle.properties?.vehicleId
+      );
+      selectVehicle(isSelected ? undefined : vehicleToSelect);
+    },
+    [currVehicles]
+  );
 
   return (
     <div className="h-screen">
@@ -58,19 +81,7 @@ export default function MapContainer({ children }: React.PropsWithChildren) {
         minZoom={11}
         attributionControl={false}
         onMove={(evt) => setViewState(evt.viewState)}
-        onClick={(event) => {
-          if (event.features === undefined || event.features.length === 0) {
-            return;
-          }
-          const features = event.features;
-          console.log(event.features);
-          const alreadySelected =
-            selectedId === features[0].properties?.vehicleId;
-
-          selectVehicle(
-            alreadySelected ? undefined : features[0].properties?.vehicleId
-          ); //TODO: type features
-        }}
+        onClick={onClickMap}
       >
         {children}
         <Marker
