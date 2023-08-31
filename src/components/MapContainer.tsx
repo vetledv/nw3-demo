@@ -8,9 +8,11 @@ import Map, {
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useCallback, useRef, useState } from "react";
 import {
-  useCurrVehiclesStore,
-  useSelectedVehicleStore,
-  useVehicleSelect,
+  useCurrentVehicles,
+  useHoveredVehicle,
+  useSelectedVehicle,
+  useSetHoveredVehicle,
+  useSetSelectedVehicle,
 } from "~/utils/zustand";
 
 const MAPBOX_TOKEN =
@@ -20,6 +22,13 @@ const OSLO_BOUNDS = { longitude: 10.747263, latitude: 59.926678 };
 type LoggedEvent = Record<"string", LngLat>;
 
 export default function MapContainer({ children }: React.PropsWithChildren) {
+  const selectedId = useSelectedVehicle();
+  const currVehicles = useCurrentVehicles();
+  const hoveredVehicle = useHoveredVehicle();
+
+  const setSelectedVehicle = useSetSelectedVehicle();
+  const selectHoveredVehicle = useSetHoveredVehicle();
+
   const mapRef = useRef<MapRef>(null);
 
   const [viewState, setViewState] = useState({
@@ -48,23 +57,22 @@ export default function MapContainer({ children }: React.PropsWithChildren) {
     logEvents((_events) => ({ ..._events, onDragEnd: event.lngLat }));
   }, []);
 
-  const selectedId = useSelectedVehicleStore();
-  const currVehicles = useCurrVehiclesStore();
-  const selectVehicle = useVehicleSelect();
-
   const onClickMap = useCallback(
     (evt: MapLayerMouseEvent) => {
       const features = evt.features;
       if (features === undefined || features.length === 0) {
         return;
       }
-      console.log(features);
-      const vehicle = features[0];
-      const isSelected = vehicle.properties?.vehicleId === selectedId;
+      console.log("MAPCLICK", features);
+      const feature = features[0];
+      const isSelected = feature.properties?.vehicleId === selectedId;
       const vehicleToSelect = currVehicles.find(
-        (x) => x.vehicleId === vehicle.properties?.vehicleId
+        (x) => x.vehicleId === feature.properties?.vehicleId
       );
-      selectVehicle(isSelected ? undefined : vehicleToSelect);
+      if (vehicleToSelect === undefined) {
+        return;
+      }
+      setSelectedVehicle(isSelected ? undefined : vehicleToSelect);
     },
     [currVehicles]
   );
@@ -75,13 +83,29 @@ export default function MapContainer({ children }: React.PropsWithChildren) {
         {...viewState}
         ref={mapRef}
         reuseMaps
-        interactiveLayerIds={["vehicles"]}
+        interactiveLayerIds={["vehicles", "vehicles-highlight"]}
         mapboxAccessToken={MAPBOX_TOKEN}
         mapStyle="mapbox://styles/mapbox/streets-v9"
         minZoom={11}
         attributionControl={false}
         onMove={(evt) => setViewState(evt.viewState)}
         onClick={onClickMap}
+        onMouseMove={(evt) => {
+          const feature = evt.features?.[0];
+          if (feature === undefined) {
+            if (hoveredVehicle !== undefined) {
+              selectHoveredVehicle(undefined);
+            }
+            return;
+          }
+          const vehicleToSelect = currVehicles.find(
+            (x) => x.vehicleId === feature.properties?.vehicleId
+          );
+          if (vehicleToSelect === hoveredVehicle) {
+            return;
+          }
+          selectHoveredVehicle(vehicleToSelect);
+        }}
       >
         {children}
         <Marker

@@ -1,37 +1,13 @@
-import { useMemo } from "react";
 import { useSubscription } from "@apollo/client";
 import { Source, Layer } from "react-map-gl";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
 
+import { subVehicles } from "~/graphql/queries";
 import {
-  type Vehicle,
-  type MaybeVehicle,
-  subVehicles,
-} from "~/graphql/queries";
-import {
-  useCurrVehiclesActions,
-  useCurrVehiclesStore,
-  useSelectedVehicleStore,
+  useCurrentVehiclesActions,
+  useGeoJSONVehicles,
+  useHoveredVehicle,
+  useSelectedVehicle,
 } from "~/utils/zustand";
-
-type VehicleProperties = Pick<Vehicle, "lastUpdated" | "vehicleId">;
-
-type VehicleFeatCol = FeatureCollection<Geometry, VehicleProperties>;
-type VehicleFeature = Feature<Geometry, VehicleProperties>;
-
-/**
- * Generic type predicate fn to filter falsy values.
- *
- * Usage: `someArray.filter(notEmpty)`
- *
- * @link https://stackoverflow.com/a/46700791
- */
-export function notEmpty<T>(value: T | null | undefined): value is T {
-  if (value === null || value === undefined) {
-    return false;
-  }
-  return true;
-}
 
 const osloBoundingBox = {
   minLat: 59.648293,
@@ -58,76 +34,64 @@ const selectedPaint = {
   "circle-stroke-color": "#666666",
   "circle-stroke-width": 2,
 };
-
-const ONE_MIN = 60 * 1000;
-
-/**
- * Checks if a date is older than specified interval `millis`
- * @param date the date to compare with now
- * @param millis amount of ms
- * @returns boolean
- */
-export const olderThanMillis = (date: Date, millis: number) => {
-  const msDiff = new Date().getTime() - date.getTime();
-  return msDiff > millis;
+const hoveredPaint = {
+  "circle-color": "#ffa500",
+  "circle-radius": 12,
+  "circle-stroke-color": "#666666",
+  "circle-stroke-width": 2,
 };
 
 export function VehicleSource() {
-  const currVehicles = useCurrVehiclesStore();
-  const cvActions = useCurrVehiclesActions();
-  const selectedVehicle = useSelectedVehicleStore();
+  const selectedVehicle = useSelectedVehicle();
+  const hoveredVehicle = useHoveredVehicle();
+  const geoJSONVehicles = useGeoJSONVehicles()();
 
-  const vehiclesSub = useSubscription(subVehicles, {
+  const cvActions = useCurrentVehiclesActions();
+
+  const _vehicleSub = useSubscription(subVehicles, {
     variables,
     onData(opts) {
-      const vehicles = opts.data.data?.vehicles
-      if (!vehicles || vehicles.length === 0) {
+      const vehicles = opts.data.data?.vehicles;
+      if (!vehicles || vehicles === undefined || vehicles.length === 0) {
         //TODO: filter time here too?
         //if none are added for a long time, it will not filter old entries
         return;
       }
-      cvActions.replace(vehicles);
-      console.log(currVehicles)
+      cvActions.concat(vehicles);
     },
   });
 
-  const geojsonVehicles = useMemo(() => {
-    const features = currVehicles.map((vehicle) => {
-      return {
-        type: "Feature",
-        id: vehicle!.vehicleId!,
-        geometry: {
-          type: "Point",
-          coordinates: [
-            vehicle!.location!.longitude,
-            vehicle!.location!.latitude,
-          ],
-        },
-        properties: {
-          //TODO: lastUpdated is typed as any
-          lastUpdated: vehicle!.lastUpdated as string,
-          vehicleId: vehicle!.vehicleId!,
-        },
-      };
-    }) satisfies Array<VehicleFeature> | undefined;
-
-    return {
-      type: "FeatureCollection",
-      features: features || [],
-    };
-  }, [currVehicles]) satisfies VehicleFeatCol;
-
-  const filter = ["in", "vehicleId", selectedVehicle?.vehicleId ?? ""];
+  /**
+   * to show selectedVehicle in vehicles-highlight layer
+   * @link https://github.com/visgl/react-map-gl/blob/7.1-release/examples/filter/src/app.tsx
+   */
+  const selectedFilter = ["in", "vehicleId", selectedVehicle?.vehicleId ?? ""];
+  const hoveredFilter = ["in", "vehicleId", hoveredVehicle?.vehicleId ?? ""];
 
   return (
-    <Source id="vehicles" type="geojson" data={geojsonVehicles}>
-      <Layer id="vehicles" interactive type="circle" paint={paint} />
+    <Source id="vehicles" type="geojson" data={geoJSONVehicles}>
+      <Layer
+        id="vehicles"
+        key="vehicles"
+        interactive
+        type="circle"
+        paint={paint}
+      />
       <Layer
         id="vehicles-highlight"
+        key="vehicles-highlight"
         interactive
-        filter={filter}
+        filter={selectedFilter}
         type="circle"
         paint={selectedPaint}
+      />
+      <Layer
+        id="vehicles-hover"
+        key="vehicles-hover"
+        interactive
+        filter={hoveredFilter}
+        type="circle"
+        paint={hoveredPaint}
       />
     </Source>
   );
