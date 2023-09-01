@@ -1,6 +1,6 @@
 import Map, { type MapRef, type MapLayerMouseEvent } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { type PropsWithChildren, useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   useCurrentVehicles,
   useHoveredVehicle,
@@ -14,7 +14,14 @@ const MAPBOX_TOKEN =
   'pk.eyJ1IjoiaGVucmlrLWJyYXRoZW4iLCJhIjoiY2xsbm5wcnQxMDI1bDNkbzQxaTFnNDA2OSJ9.IjsrKGbU65mmJI-Ba-Ztug';
 const OSLO_BOUNDS = { longitude: 10.747263, latitude: 59.926678 };
 
-export default function MapContainer({ children }: PropsWithChildren) {
+const interactiveLayerIds = [
+  'vehicles',
+  'vehicle-selected',
+  'vehicles-hover',
+  'vehicle-hovered-selected',
+];
+
+export default function MapContainer({ children }: React.PropsWithChildren) {
   const selectedId = useSelectedVehicle();
   const currVehicles = useCurrentVehicles();
   const hoveredVehicle = useHoveredVehicle();
@@ -55,13 +62,23 @@ export default function MapContainer({ children }: PropsWithChildren) {
         {...viewState}
         ref={mapRef}
         reuseMaps
-        interactiveLayerIds={['vehicles', 'vehicles-highlight']}
+        interactiveLayerIds={interactiveLayerIds}
         mapboxAccessToken={MAPBOX_TOKEN}
         mapStyle='mapbox://styles/mapbox/streets-v9'
         minZoom={11}
         attributionControl={false}
         onMove={(evt) => setViewState(evt.viewState)}
         onClick={onClickMap}
+        onLoad={(e) => {
+          e.target.loadImage('/siren.png', (error, image) => {
+            if (error || !image) {
+              console.log(error, image);
+              return;
+            }
+            console.log(image);
+            e.target.addImage('siren', image);
+          });
+        }}
         onMouseMove={(evt) => {
           const feature = evt.features?.[0];
           if (feature === undefined) {

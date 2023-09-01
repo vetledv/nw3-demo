@@ -13,17 +13,16 @@ export function MarkerCard({
   );
 }
 
-export function VehicleCard({
-  vehicle,
-}: {
-  vehicle: MaybeVehicle | undefined;
-}) {
-  const { vehicleId, location } = { ...vehicle };
+export function VehicleCard({ vehicle }: { vehicle: MaybeVehicle }) {
+  const idSplit = vehicle.vehicleId?.split(':');
   return (
     <div className='p-2 space-y-2 rounded-md bg-slate-600'>
-      <p>{vehicleId}</p>
-      <p>{location?.latitude}</p>
-      <p>{location?.longitude}</p>
+      <h3 className='flex gap-2 text-xl font-bold'>
+        <span>{idSplit?.[0]}</span>
+        <span>{idSplit?.[2]}</span>
+      </h3>
+      <p>Latitude: {vehicle.location?.latitude}</p>
+      <p>Latitude: {vehicle.location?.longitude}</p>
     </div>
   );
 }

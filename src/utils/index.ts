@@ -1,3 +1,5 @@
+import type { DeepNonNullable } from '~/types';
+
 /**
  * Generic type predicate fn to filter falsy values.
  *
@@ -47,4 +49,14 @@ export function filterDuplicates<T extends object, K extends keyof T>(
     }
   }
   return [filteredItems, uniqueIds];
+}
+
+export function assertNonNullProperties<T extends object>(
+  item: T,
+): asserts item is DeepNonNullable<T> {
+  for (const property in item) {
+    if (typeof property === 'undefined' || typeof property === null) {
+      throw new Error('Undefined values in object');
+    }
+  }
 }

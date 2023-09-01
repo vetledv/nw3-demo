@@ -23,9 +23,15 @@
   },
   "include": [
     "src",
-    "graphql-codegen.ts",
+    "codegen.ts",
     "tailwind.config.ts",
-    ".eslintrc.cjs"
+    "vite.config.ts",
+    ".eslintrc.cjs",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.cjs",
+    "**/*.mjs"
   ],
+  "exclude": ["node_modules", ".husky"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

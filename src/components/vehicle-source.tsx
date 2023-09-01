@@ -22,30 +22,92 @@ const variables = {
   codespaceId: 'VYX',
 } as const;
 
-const paint = {
+const defaultCirclePaint = {
   'circle-color': '#ffff00',
   'circle-radius': 12,
   'circle-stroke-color': '#333333',
   'circle-stroke-width': 2,
 };
+
 const selectedPaint = {
+  ...defaultCirclePaint,
   'circle-color': '#ff0000',
-  'circle-radius': 12,
-  'circle-stroke-color': '#666666',
-  'circle-stroke-width': 2,
 };
 const hoveredPaint = {
+  ...defaultCirclePaint,
   'circle-color': '#ffa500',
-  'circle-radius': 12,
-  'circle-stroke-color': '#666666',
-  'circle-stroke-width': 2,
+};
+const hoveredSelectedPaint = {
+  ...defaultCirclePaint,
+  'circle-color': '#ffc0cb',
 };
 
-export function VehicleSource() {
+function VehicleLayers() {
   const selectedVehicle = useSelectedVehicle();
   const hoveredVehicle = useHoveredVehicle();
-  const geoJSONVehicles = useGeoJSONVehicles()();
 
+  //https://github.com/visgl/react-map-gl/blob/7.1-release/examples/filter/src/app.tsx
+  const selectedFilter = ['==', 'vehicleId', selectedVehicle?.vehicleId ?? ''];
+  const hoveredFilter = ['==', 'vehicleId', hoveredVehicle?.vehicleId ?? ''];
+  const hoverAndSelect =
+    selectedVehicle?.vehicleId === hoveredVehicle?.vehicleId;
+  const hoverSelectFilter = [
+    '==',
+    'vehicleId',
+    hoverAndSelect ? hoveredVehicle?.vehicleId ?? '' : '',
+  ];
+
+  //remove from the default layer if any of the other layers are active
+  const defaultFilter = [
+    'all',
+    ['!=', 'vehicleId', selectedVehicle?.vehicleId ?? ''],
+    ['!=', 'vehicleId', hoveredVehicle?.vehicleId ?? ''],
+  ];
+
+  return (
+    <>
+      <Layer
+        source='vehicles'
+        id='vehicles'
+        key='vehicles'
+        interactive
+        type='circle'
+        paint={defaultCirclePaint}
+        filter={defaultFilter}
+      />
+      <Layer
+        source='vehicles'
+        id='vehicle-selected'
+        key='vehicle-selected'
+        interactive
+        type='circle'
+        filter={selectedFilter}
+        paint={selectedPaint}
+      />
+      <Layer
+        source='vehicles'
+        id='vehicles-hover'
+        key='vehicles-hover'
+        interactive
+        type='circle'
+        filter={hoveredFilter}
+        paint={hoveredPaint}
+      />
+      <Layer
+        source='vehicles'
+        id='vehicle-hovered-selected'
+        key='vehicle-hovered-selected'
+        interactive
+        type='circle'
+        filter={hoverSelectFilter}
+        paint={hoveredSelectedPaint}
+      />
+    </>
+  );
+}
+
+export function VehicleSource() {
+  const data = useGeoJSONVehicles()();
   const cvActions = useCurrentVehiclesActions();
 
   const _vehicleSub = useSubscription(subVehicles, {
@@ -57,42 +119,12 @@ export function VehicleSource() {
         //if none are added for a long time, it will not filter old entries
         return;
       }
-      cvActions.concat(vehicles);
+      cvActions.filterAndConcat(vehicles);
     },
   });
-
-  /**
-   * to show selectedVehicle in vehicles-highlight layer
-   * @link https://github.com/visgl/react-map-gl/blob/7.1-release/examples/filter/src/app.tsx
-   */
-  const selectedFilter = ['in', 'vehicleId', selectedVehicle?.vehicleId ?? ''];
-  const hoveredFilter = ['in', 'vehicleId', hoveredVehicle?.vehicleId ?? ''];
-
   return (
-    <Source id='vehicles' type='geojson' data={geoJSONVehicles}>
-      <Layer
-        id='vehicles'
-        key='vehicles'
-        interactive
-        type='circle'
-        paint={paint}
-      />
-      <Layer
-        id='vehicles-highlight'
-        key='vehicles-highlight'
-        interactive
-        filter={selectedFilter}
-        type='circle'
-        paint={selectedPaint}
-      />
-      <Layer
-        id='vehicles-hover'
-        key='vehicles-hover'
-        interactive
-        filter={hoveredFilter}
-        type='circle'
-        paint={hoveredPaint}
-      />
+    <Source id='vehicles' type='geojson' data={data}>
+      <VehicleLayers />
     </Source>
   );
 }

@@ -21,7 +21,7 @@ type CurrentVehiclesSlice = {
   actions: {
     add: (vehicle: MaybeVehicle) => void;
     remove: (id: string | undefined) => void;
-    concat: (vehicles: Array<MaybeVehicle | null | undefined>) => void;
+    filterAndConcat: (vehicles: Array<MaybeVehicle | null | undefined>) => void;
   };
 };
 
@@ -88,7 +88,7 @@ const createCurrentVehiclesSlice: StateCreator<CurrentVehiclesSlice> = (
           (prev) => prev.vehicleId !== id,
         ),
       })),
-    concat: (vehicles) =>
+    filterAndConcat: (vehicles) =>
       set((state) => {
         const [newFiltered, seenIds] = filterDuplicates(vehicles, 'vehicleId');
         const prevFiltered = state.currentVehicles.filter((prev) => {
