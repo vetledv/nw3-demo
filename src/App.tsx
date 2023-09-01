@@ -7,7 +7,6 @@ import { VehicleDetailWrapper } from './components/VehicleDetails';
 export function App() {
   return (
     <>
-      <Navbar />
       <Sidebar>
         <VehicleDetailWrapper />
       </Sidebar>
