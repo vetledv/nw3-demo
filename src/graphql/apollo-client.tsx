@@ -4,21 +4,21 @@ import {
   ApolloClient,
   ApolloProvider,
   InMemoryCache,
-} from "@apollo/client";
-import { loadDevMessages, loadErrorMessages } from "@apollo/client/dev";
-import { WebSocketLink } from "@apollo/client/link/ws";
-import { getMainDefinition } from "@apollo/client/utilities";
-import { SubscriptionClient } from "subscriptions-transport-ws";
+} from '@apollo/client';
+import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
 
-const wss = "wss://api.entur.io/realtime/v1/vehicles/subscriptions";
-const uri = "https://api.entur.io/realtime/v1/vehicles/graphql";
+const wss = 'wss://api.entur.io/realtime/v1/vehicles/subscriptions';
+const uri = 'https://api.entur.io/realtime/v1/vehicles/graphql';
 
 /**
  * Entur will deploy strict rate-limiting policies on API-consumers who do not identify with a header
  * @link https://developer.entur.org/pages-intro-authentication
  */
 const headers = {
-  "ET-Client-Name": "bouvet-nw3demo",
+  'ET-Client-Name': 'bouvet-nw3demo',
 } as const;
 
 const httpLink = new HttpLink({ uri });
@@ -27,7 +27,7 @@ const wsLink = new WebSocketLink(
   new SubscriptionClient(wss, {
     reconnect: true,
     connectionParams: headers,
-  })
+  }),
 );
 
 /**
@@ -37,11 +37,11 @@ const splitLink = split(
   ({ query }) => {
     const def = getMainDefinition(query);
     return (
-      def.kind === "OperationDefinition" && def.operation === "subscription"
+      def.kind === 'OperationDefinition' && def.operation === 'subscription'
     );
   },
   wsLink,
-  httpLink
+  httpLink,
 );
 
 /**
@@ -49,7 +49,7 @@ const splitLink = split(
  * @returns `httpLink` if ssr, `splitLink` otherwise
  */
 function chooseLink() {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     return splitLink;
   }
   return httpLink;
@@ -63,7 +63,7 @@ const apolloClient = new ApolloClient({
 });
 
 export function ApolloClientProvider({ children }: React.PropsWithChildren) {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === 'development') {
     loadDevMessages();
     loadErrorMessages();
   }

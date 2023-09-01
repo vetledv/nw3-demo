@@ -1,10 +1,10 @@
-import { create, type StateCreator } from "zustand";
-import { devtools } from "zustand/middleware";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
-import { filterDuplicates, olderThanMillis } from "~/utils";
-import type { Vehicle, MaybeVehicle } from "~/types/vehicles";
+import { create, type StateCreator } from 'zustand';
+import { devtools } from 'zustand/middleware';
+import type { Feature, FeatureCollection, Geometry } from 'geojson';
+import { filterDuplicates, olderThanMillis } from '~/utils';
+import type { Vehicle, MaybeVehicle } from '~/types/vehicles';
 
-type VehicleProperties = Pick<Vehicle, "lastUpdated" | "vehicleId">;
+type VehicleProperties = Pick<Vehicle, 'lastUpdated' | 'vehicleId'>;
 type VehicleFeatCol = FeatureCollection<Geometry, VehicleProperties>;
 type VehicleFeature = Feature<Geometry, VehicleProperties>;
 
@@ -31,13 +31,13 @@ const ONE_MIN = 60 * 1000;
 
 function vehicleToGeoJSONFeature(vehicle: MaybeVehicle): VehicleFeature {
   if (!vehicle.location || !vehicle.vehicleId || !vehicle.lastUpdated) {
-    throw new Error("Vehicle had undefined properties");
+    throw new Error('Vehicle had undefined properties');
   }
   return {
-    type: "Feature",
+    type: 'Feature',
     id: vehicle.vehicleId,
     geometry: {
-      type: "Point",
+      type: 'Point',
       coordinates: [vehicle.location.longitude, vehicle.location.latitude],
     },
     properties: {
@@ -49,7 +49,7 @@ function vehicleToGeoJSONFeature(vehicle: MaybeVehicle): VehicleFeature {
 }
 
 const createSelectedVehicleSlice: StateCreator<SelectedVehicleSlice> = (
-  set
+  set,
 ) => ({
   selectedVehicle: undefined,
   hoveredVehicle: undefined,
@@ -59,16 +59,16 @@ const createSelectedVehicleSlice: StateCreator<SelectedVehicleSlice> = (
 
 const createCurrentVehiclesSlice: StateCreator<CurrentVehiclesSlice> = (
   set,
-  get
+  get,
 ) => ({
   currentVehicles: [],
   getGeoJSONVehicles: () => {
     const currState = get();
     const features = currState.currentVehicles.map((vehicle) =>
-      vehicleToGeoJSONFeature(vehicle)
+      vehicleToGeoJSONFeature(vehicle),
     );
     return {
-      type: "FeatureCollection",
+      type: 'FeatureCollection',
       features: features,
     };
   },
@@ -77,7 +77,7 @@ const createCurrentVehiclesSlice: StateCreator<CurrentVehiclesSlice> = (
       set((state) => ({
         currentVehicles: [
           ...state.currentVehicles.filter(
-            (prev) => prev.vehicleId === vehicle.vehicleId
+            (prev) => prev.vehicleId === vehicle.vehicleId,
           ),
           vehicle,
         ],
@@ -85,12 +85,12 @@ const createCurrentVehiclesSlice: StateCreator<CurrentVehiclesSlice> = (
     remove: (id) =>
       set((state) => ({
         currentVehicles: state.currentVehicles.filter(
-          (prev) => prev.vehicleId !== id
+          (prev) => prev.vehicleId !== id,
         ),
       })),
     concat: (vehicles) =>
       set((state) => {
-        const [newFiltered, seenIds] = filterDuplicates(vehicles, "vehicleId");
+        const [newFiltered, seenIds] = filterDuplicates(vehicles, 'vehicleId');
         const prevFiltered = state.currentVehicles.filter((prev) => {
           const date = new Date(prev.lastUpdated);
           const olderThanTwoMin = olderThanMillis(date, ONE_MIN);
@@ -109,7 +109,7 @@ const useBoundStore = create<BoundVehicleSlice>()(
     ...createSelectedVehicleSlice(...a),
     ...createCurrentVehiclesSlice(...a),
     ...createCurrentVehiclesSlice(...a),
-  }))
+  })),
 );
 
 //createSelectedVehicleSlice

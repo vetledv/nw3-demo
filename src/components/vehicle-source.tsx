@@ -1,13 +1,13 @@
-import { useSubscription } from "@apollo/client";
-import { Source, Layer } from "react-map-gl";
+import { useSubscription } from '@apollo/client';
+import { Source, Layer } from 'react-map-gl';
 
-import { subVehicles } from "~/graphql/queries";
+import { subVehicles } from '~/graphql/queries';
 import {
   useCurrentVehiclesActions,
   useGeoJSONVehicles,
   useHoveredVehicle,
   useSelectedVehicle,
-} from "~/utils/zustand";
+} from '~/store/VehicleStore';
 
 const osloBoundingBox = {
   minLat: 59.648293,
@@ -19,26 +19,26 @@ const osloBoundingBox = {
 const variables = {
   boundingBox: osloBoundingBox,
   bufferTime: 1_000,
-  codespaceId: "VYX",
+  codespaceId: 'VYX',
 } as const;
 
 const paint = {
-  "circle-color": "#ffff00",
-  "circle-radius": 12,
-  "circle-stroke-color": "#333333",
-  "circle-stroke-width": 2,
+  'circle-color': '#ffff00',
+  'circle-radius': 12,
+  'circle-stroke-color': '#333333',
+  'circle-stroke-width': 2,
 };
 const selectedPaint = {
-  "circle-color": "#ff0000",
-  "circle-radius": 12,
-  "circle-stroke-color": "#666666",
-  "circle-stroke-width": 2,
+  'circle-color': '#ff0000',
+  'circle-radius': 12,
+  'circle-stroke-color': '#666666',
+  'circle-stroke-width': 2,
 };
 const hoveredPaint = {
-  "circle-color": "#ffa500",
-  "circle-radius": 12,
-  "circle-stroke-color": "#666666",
-  "circle-stroke-width": 2,
+  'circle-color': '#ffa500',
+  'circle-radius': 12,
+  'circle-stroke-color': '#666666',
+  'circle-stroke-width': 2,
 };
 
 export function VehicleSource() {
@@ -65,32 +65,32 @@ export function VehicleSource() {
    * to show selectedVehicle in vehicles-highlight layer
    * @link https://github.com/visgl/react-map-gl/blob/7.1-release/examples/filter/src/app.tsx
    */
-  const selectedFilter = ["in", "vehicleId", selectedVehicle?.vehicleId ?? ""];
-  const hoveredFilter = ["in", "vehicleId", hoveredVehicle?.vehicleId ?? ""];
+  const selectedFilter = ['in', 'vehicleId', selectedVehicle?.vehicleId ?? ''];
+  const hoveredFilter = ['in', 'vehicleId', hoveredVehicle?.vehicleId ?? ''];
 
   return (
-    <Source id="vehicles" type="geojson" data={geoJSONVehicles}>
+    <Source id='vehicles' type='geojson' data={geoJSONVehicles}>
       <Layer
-        id="vehicles"
-        key="vehicles"
+        id='vehicles'
+        key='vehicles'
         interactive
-        type="circle"
+        type='circle'
         paint={paint}
       />
       <Layer
-        id="vehicles-highlight"
-        key="vehicles-highlight"
+        id='vehicles-highlight'
+        key='vehicles-highlight'
         interactive
         filter={selectedFilter}
-        type="circle"
+        type='circle'
         paint={selectedPaint}
       />
       <Layer
-        id="vehicles-hover"
-        key="vehicles-hover"
+        id='vehicles-hover'
+        key='vehicles-hover'
         interactive
         filter={hoveredFilter}
-        type="circle"
+        type='circle'
         paint={hoveredPaint}
       />
     </Source>

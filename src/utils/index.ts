@@ -31,7 +31,7 @@ export function olderThanMillis(date: Date, millis: number) {
  */
 export function filterDuplicates<T extends object, K extends keyof T>(
   items: Array<T | undefined | null>,
-  comparatorKey: K
+  comparatorKey: K,
 ): [Array<T>, Set<T[K]>] {
   const uniqueIds = new Set<T[K]>();
   const filteredItems: Array<T> = [];

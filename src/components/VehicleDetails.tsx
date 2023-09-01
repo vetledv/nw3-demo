@@ -1,16 +1,15 @@
-import type { MaybeVehicle } from "~/types/vehicles";
-import { useHoveredVehicle, useSelectedVehicle } from "~/utils/zustand";
+import type { MaybeVehicle } from '~/types/vehicles';
+import { useHoveredVehicle, useSelectedVehicle } from '~/store/VehicleStore';
+import { useMarkerEvents } from '~/store/MarkerStore';
 
-export default function VehicleDetails() {
-  const value: MaybeVehicle | undefined = useSelectedVehicle();
-  const { vehicleId, location } = { ...value };
-
+export function MarkerCard({
+  marker,
+}: Record<string, { longitude: number; latitude: number }>) {
   return (
-    <>
-      <div>{vehicleId}</div>
-      <div>{location?.latitude}</div>
-      <div>{location?.longitude}</div>
-    </>
+    <div className='p-2 space-y-2 rounded-md bg-slate-600'>
+      <div>{marker.latitude}</div>
+      <div>{marker.longitude}</div>
+    </div>
   );
 }
 
@@ -21,7 +20,7 @@ export function VehicleCard({
 }) {
   const { vehicleId, location } = { ...vehicle };
   return (
-    <div className="p-2 space-y-2 rounded-md bg-slate-600">
+    <div className='p-2 space-y-2 rounded-md bg-slate-600'>
       <p>{vehicleId}</p>
       <p>{location?.latitude}</p>
       <p>{location?.longitude}</p>
@@ -32,16 +31,24 @@ export function VehicleCard({
 export function VehicleDetailWrapper() {
   const hoveredVehicle = useHoveredVehicle();
   const selectedVehicle = useSelectedVehicle();
+  const marker = useMarkerEvents();
+
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
+      {marker && (
+        <div className='space-y-2'>
+          <p>Marker</p>
+          <MarkerCard marker={marker} />
+        </div>
+      )}
       {selectedVehicle && (
-        <div className="space-y-2">
+        <div className='space-y-2'>
           <p>Selected</p>
           <VehicleCard vehicle={selectedVehicle} />
         </div>
       )}
       {hoveredVehicle && (
-        <div className="space-y-2">
+        <div className='space-y-2'>
           <p>Hovered</p>
           <VehicleCard vehicle={hoveredVehicle} />
         </div>

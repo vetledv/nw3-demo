@@ -1,4 +1,4 @@
-import { graphql } from "~/graphql/gen";
+import { graphql } from '~/graphql/gen';
 
 export const subVehicles = graphql(`
   subscription GetVehicles(
