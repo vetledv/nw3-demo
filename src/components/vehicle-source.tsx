@@ -1,7 +1,10 @@
 import { useSubscription } from '@apollo/client';
+import { useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl';
+import { useServerSubscription } from '~/App';
 
 import { subVehicles } from '~/graphql/queries';
+import { useMarkerEvents } from '~/store/MarkerStore';
 import {
   useCurrentVehiclesActions,
   useGeoJSONVehicles,
@@ -106,6 +109,25 @@ function VehicleLayers() {
   );
 }
 
+export function TestWsPush() {
+  const [ws, connected] = useServerSubscription();
+  const selectedVehicle = useSelectedVehicle();
+  const marker = useMarkerEvents();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (connected) {
+        if (!selectedVehicle) return;
+        ws.current?.send(
+          JSON.stringify({ marker: marker, selected: selectedVehicle }),
+        );
+      }
+    }, variables.bufferTime);
+    return () => clearInterval(interval);
+  }, [connected, selectedVehicle, marker]);
+
+  return null;
+}
+
 export function VehicleSource() {
   const data = useGeoJSONVehicles()();
   const cvActions = useCurrentVehiclesActions();
@@ -123,8 +145,11 @@ export function VehicleSource() {
     },
   });
   return (
-    <Source id='vehicles' type='geojson' data={data}>
-      <VehicleLayers />
-    </Source>
+    <>
+      <TestWsPush />
+      <Source id='vehicles' type='geojson' data={data}>
+        <VehicleLayers />
+      </Source>
+    </>
   );
 }

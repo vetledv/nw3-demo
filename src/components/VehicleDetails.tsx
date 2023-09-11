@@ -1,6 +1,12 @@
 import type { MaybeVehicle } from '~/types/vehicles';
-import { useHoveredVehicle, useSelectedVehicle } from '~/store/VehicleStore';
+import {
+  useCurrentVehicles,
+  useHoveredVehicle,
+  useSelectedVehicle,
+} from '~/store/VehicleStore';
 import { useMarkerEvents } from '~/store/MarkerStore';
+import { useServerSubscription } from '~/App';
+import { useEffect } from 'react';
 
 export function MarkerCard({
   marker,

@@ -23,6 +23,7 @@ const server = Bun.serve({
     async message(ws, message) {
       console.log(`Received ${message}`);
       ws.send(`You said: ${message}`);
+      ws.publish('test-room', message);
     },
   },
 });

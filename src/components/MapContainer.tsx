@@ -45,7 +45,8 @@ export default function MapContainer({ children }: React.PropsWithChildren) {
       }
       console.log('MAPCLICK', features);
       const feature = features[0];
-      const isSelected = feature.properties?.vehicleId === selectedId;
+      const isSelected =
+        feature.properties?.vehicleId === selectedId?.vehicleId;
       const vehicleToSelect = currVehicles.find(
         (x) => x.vehicleId === feature.properties?.vehicleId,
       );

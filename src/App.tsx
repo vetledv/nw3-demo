@@ -2,14 +2,18 @@ import MapContainer from '~/components/MapContainer';
 import { VehicleSource } from '~/components/vehicle-source';
 import Sidebar from './components/layout/Sidebar';
 import { VehicleDetailWrapper } from './components/VehicleDetails';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-function useServerSubscription() {
+//TODO: move
+export function useServerSubscription() {
   const ws = useRef<WebSocket>();
+  const [connected, setConnected] = useState(false);
   useEffect(() => {
     const socket = new WebSocket('ws://localhost:3001');
+
     socket.onopen = () => {
       console.log('connected');
+      setConnected(true);
     };
     socket.addEventListener('message', (data) => {
       console.log(data);
@@ -21,27 +25,17 @@ function useServerSubscription() {
     return () => {
       socket.close();
       ws.current = undefined;
+      setConnected(false);
     };
   }, []);
-  return ws;
+  return [ws, connected] as const;
 }
 
 export function App() {
-  const ws = useServerSubscription();
   return (
     <>
       <Sidebar>
-        <>
-          <button
-            onClick={() => {
-              if (!ws) return;
-              ws.current?.send('SLIRGSIURHØWSOUERHFgIUG');
-            }}
-            className='p-2 rounded-md bg-pink-400'>
-            123
-          </button>
-          <VehicleDetailWrapper />
-        </>
+        <VehicleDetailWrapper />
       </Sidebar>
       <main>
         <MapContainer>
