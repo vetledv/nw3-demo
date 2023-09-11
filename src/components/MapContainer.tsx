@@ -64,7 +64,7 @@ export default function MapContainer({ children }: React.PropsWithChildren) {
       //   });
       // }
     },
-    [currVehicles],
+    [currVehicles, selectedId],
   );
 
   return (

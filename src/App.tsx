@@ -19,7 +19,7 @@ export function useServerSubscription() {
       console.log(data);
     });
     socket.onmessage = (data) => {
-      console.log('onmessage', data);
+      // console.log('onmessage', data);
     };
     ws.current = socket;
     return () => {
