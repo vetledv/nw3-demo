@@ -19,7 +19,6 @@ const server = Bun.serve({
     close(ws) {
       ws.publish('test-room', 'someone left');
       ws.unsubscribe('test-room');
-      console.log(ws.isSubscribed('test-room'));
     },
     async message(ws, message) {
       console.log(`Received ${message}`);

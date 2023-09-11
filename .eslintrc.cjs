@@ -29,7 +29,12 @@ const config = {
       },
     ],
   },
-  ignorePatterns: ['src/graphql/gen/*.ts', 'postcss.config.js', '*.json'],
+  ignorePatterns: [
+    'src/graphql/gen/*.ts',
+    'postcss.config.js',
+    '*.json',
+    '*.lockb',
+  ],
 };
 
 module.exports = config;

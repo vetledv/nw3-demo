@@ -10,3 +10,4 @@ tailwind.config.js
 *.d.ts
 # husky being stupid?
 .prettierignore
+bun.lockb
