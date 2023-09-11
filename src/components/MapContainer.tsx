@@ -54,15 +54,6 @@ export default function MapContainer({ children }: React.PropsWithChildren) {
         return;
       }
       setSelectedVehicle(isSelected ? undefined : vehicleToSelect);
-      // if (vehicleToSelect.location) {
-      //   evt.target.flyTo({
-      //     curve:11,
-      //     center: {
-      //       lat: vehicleToSelect.location.latitude,
-      //       lng: vehicleToSelect.location.longitude,
-      //     },
-      //   });
-      // }
     },
     [currVehicles, selectedId],
   );
