@@ -23,6 +23,7 @@ export function VehicleCard({ vehicle }: { vehicle: MaybeVehicle }) {
       </h3>
       <p>Latitude: {vehicle.location?.latitude}</p>
       <p>Latitude: {vehicle.location?.longitude}</p>
+      <time>{new Date(vehicle?.lastUpdated).toUTCString()}</time>
     </div>
   );
 }

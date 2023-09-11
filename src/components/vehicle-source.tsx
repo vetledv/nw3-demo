@@ -114,7 +114,7 @@ export function VehicleSource() {
     variables,
     onData(opts) {
       const vehicles = opts.data.data?.vehicles;
-      if (!vehicles || vehicles === undefined || vehicles.length === 0) {
+      if (!vehicles || vehicles === undefined) {
         //TODO: filter time here too?
         //if none are added for a long time, it will not filter old entries
         return;

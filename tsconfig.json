@@ -17,6 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "incremental": true,
     "baseUrl": ".",
+    "types": ["bun-types"],
     "paths": {
       "~/*": ["./src/*"]
     }

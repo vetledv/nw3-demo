@@ -12,6 +12,7 @@ import DraggableMarker from '~/components/DraggableMarker';
 
 const MAPBOX_TOKEN =
   'pk.eyJ1IjoiaGVucmlrLWJyYXRoZW4iLCJhIjoiY2xsbm5wcnQxMDI1bDNkbzQxaTFnNDA2OSJ9.IjsrKGbU65mmJI-Ba-Ztug';
+
 const OSLO_BOUNDS = { longitude: 10.747263, latitude: 59.926678 };
 
 const interactiveLayerIds = [
@@ -52,6 +53,15 @@ export default function MapContainer({ children }: React.PropsWithChildren) {
         return;
       }
       setSelectedVehicle(isSelected ? undefined : vehicleToSelect);
+      // if (vehicleToSelect.location) {
+      //   evt.target.flyTo({
+      //     curve:11,
+      //     center: {
+      //       lat: vehicleToSelect.location.latitude,
+      //       lng: vehicleToSelect.location.longitude,
+      //     },
+      //   });
+      // }
     },
     [currVehicles],
   );
